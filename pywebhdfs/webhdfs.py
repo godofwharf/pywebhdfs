@@ -145,16 +145,16 @@ class PyWebHdfsClient(object):
         >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
         >>> my_data = '01010101010101010101010101010101'
         >>> my_file = 'user/hdfs/data/myfile.txt'
-        >>> hdfs.create_file(my_file, my_data)
+        >>> hdfs.create_file_with_redirect(my_file, my_data)
 
         Example with optional args:
 
-        >>> hdfs.create_file(my_file, my_data, overwrite=True, blocksize=64)
+        >>> hdfs.create_file_with_redirect(my_file, my_data, overwrite=True, blocksize=64)
 
         Or for sending data from file like objects:
 
         >>> with open('file.data') as file_data:
-        >>>     hdfs.create_file(hdfs_path, data=file_data)
+        >>>     hdfs.create_file_with_redirect(hdfs_path, file_data)
 
 
         Note: The create_file function does not follow automatic redirects but
@@ -165,7 +165,7 @@ class PyWebHdfsClient(object):
         # make the initial CREATE call to the HDFS namenode
         optional_args = kwargs
 
-        response = self._resolve_host(self.session.put, False,
+        response = self._resolve_host(self.session.put, True,
                                       path, operations.CREATE,
                                       **optional_args)
         if not response.status_code == http_client.CREATED:
