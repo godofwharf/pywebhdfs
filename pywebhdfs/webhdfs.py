@@ -98,9 +98,9 @@ class PyWebHdfsClient(object):
 
         # make the initial CREATE call to the HDFS namenode
         optional_args = kwargs
-        allow_redirect = kwargs.get('allow_redirect', False)
+        allow_redirects = kwargs.get('allow_redirects', False)
 
-        def put_wrapper(uri, allow_redirects=False, **kwargs):
+        def put_wrapper(uri, **kwargs):
             return self.session.put(uri,
                                     allow_redirects=allow_redirects,
                                     timeout=self.timeout,
@@ -109,12 +109,12 @@ class PyWebHdfsClient(object):
                                     **self.request_extra_opts)
 
         response = self._resolve_host(put_wrapper,
-                                      allow_redirect,
+                                      allow_redirects,
                                       path,
                                       operations.CREATE,
                                       **optional_args)
 
-        if not allow_redirect:
+        if not allow_redirects:
             if not response.status_code == http_client.TEMPORARY_REDIRECT:
                 _raise_pywebhdfs_exception(
                     response.status_code, response.content)
@@ -132,7 +132,6 @@ class PyWebHdfsClient(object):
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return True
-
 
     def append_file(self, path, file_data, **kwargs):
         """
