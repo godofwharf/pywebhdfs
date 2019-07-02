@@ -13,4 +13,5 @@ cache-store
 cache-config
 *.egg
 *.eggs
+dist/*
 *~
