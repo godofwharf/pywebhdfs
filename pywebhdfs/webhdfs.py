@@ -100,78 +100,39 @@ class PyWebHdfsClient(object):
         optional_args = kwargs
         allow_redirect = kwargs.get('allow_redirect', False)
 
-        if allow_redirect:
-            return self.create_file_with_redirect(path, file_data, **kwargs)
+        def put_wrapper(uri, allow_redirects=False, **kwargs):
+            return self.session.put(uri,
+                                    allow_redirects=allow_redirects,
+                                    timeout=self.timeout,
+                                    data=file_data,
+                                    headers={'content-type': 'application/octet-stream'},
+                                    **self.request_extra_opts)
 
-        init_response = self._resolve_host(self.session.put, False,
-                                           path, operations.CREATE,
-                                           **optional_args)
-        if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
-            _raise_pywebhdfs_exception(
-                init_response.status_code, init_response.content)
-
-        # Get the address provided in the location header of the
-        # initial response from the namenode and make the CREATE request
-        # to the datanode
-        uri = init_response.headers['location']
-        response = self.session.put(
-            uri, data=file_data,
-            headers={'content-type': 'application/octet-stream'},
-            **self.request_extra_opts)
-
-        if not response.status_code == http_client.CREATED:
-            _raise_pywebhdfs_exception(response.status_code, response.content)
-
-        return True
-
-    def create_file_with_redirect(self, path, file_data, **kwargs):
-        """
-        Creates a new file on HDFS
-
-        :param path: the HDFS file path
-        :param file_data: the initial data to write to the new file
-
-        The function wraps the WebHDFS REST call:
-
-        PUT http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=CREATE
-
-        [&overwrite=<true|false>][&blocksize=<LONG>][&replication=<SHORT>]
-        [&permission=<OCTAL>][&buffersize=<INT>]
-
-        The function accepts all WebHDFS optional arguments shown above
-
-        Example:
-
-        >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
-        >>> my_data = '01010101010101010101010101010101'
-        >>> my_file = 'user/hdfs/data/myfile.txt'
-        >>> hdfs.create_file_with_redirect(my_file, my_data)
-
-        Example with optional args:
-
-        >>> hdfs.create_file_with_redirect(my_file, my_data, overwrite=True, blocksize=64)
-
-        Or for sending data from file like objects:
-
-        >>> with open('file.data') as file_data:
-        >>>     hdfs.create_file_with_redirect(hdfs_path, file_data)
-
-
-        Note: The create_file function does not follow automatic redirects but
-        instead uses a two step call to the API as required in the
-        WebHDFS documentation
-        """
-
-        # make the initial CREATE call to the HDFS namenode
-        optional_args = kwargs
-
-        response = self._resolve_host(self.session.put, True,
-                                      path, operations.CREATE,
+        response = self._resolve_host(put_wrapper,
+                                      allow_redirect,
+                                      path,
+                                      operations.CREATE,
                                       **optional_args)
+
+        if not allow_redirect:
+            if not response.status_code == http_client.TEMPORARY_REDIRECT:
+                _raise_pywebhdfs_exception(
+                    response.status_code, response.content)
+
+            # Get the address provided in the location header of the
+            # initial response from the namenode and make the CREATE request
+            # to the datanode
+            uri = response.headers['location']
+            response = self.session.put(uri,
+                                        data=file_data,
+                                        headers={'content-type': 'application/octet-stream'},
+                                        **self.request_extra_opts)
+
         if not response.status_code == http_client.CREATED:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return True
+
 
     def append_file(self, path, file_data, **kwargs):
         """
