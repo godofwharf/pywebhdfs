@@ -760,7 +760,7 @@ class PyWebHdfsClient(object):
                     _move_active_host_to_head(hosts, host)
                     return response
             except requests.exceptions.RequestException as e:
-                traceback.print_exc(e)
+                traceback.print_exc()
                 print("Error connecting to host {}".format(host))
                 continue
         raise errors.ActiveHostNotFound(msg="Could not find active host")
