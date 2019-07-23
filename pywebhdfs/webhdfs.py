@@ -111,7 +111,10 @@ class PyWebHdfsClient(object):
                                     headers={'content-type': 'application/octet-stream'},
                                     **self.request_extra_opts)
             else:
-                return requests.put
+                return requests.put(uri,
+                                    allow_redirects=allow_redirects,
+                                    timeout = self.timeout,
+                                    **self.request_extra_opts)
 
         response = self._resolve_host(put_wrapper,
                                       allow_redirects,
