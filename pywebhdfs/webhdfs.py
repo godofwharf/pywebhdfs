@@ -103,12 +103,15 @@ class PyWebHdfsClient(object):
         allow_redirects = kwargs.get('allow_redirects', False)
 
         def put_wrapper(uri, **kwargs):
-            return self.session.put(uri,
+            if allow_redirects:
+                return requests.put(uri,
                                     allow_redirects=allow_redirects,
                                     timeout=self.timeout,
                                     data=file_data,
                                     headers={'content-type': 'application/octet-stream'},
                                     **self.request_extra_opts)
+            else:
+                return requests.put
 
         response = self._resolve_host(put_wrapper,
                                       allow_redirects,
@@ -126,6 +129,7 @@ class PyWebHdfsClient(object):
             # to the datanode
             uri = response.headers['location']
             response = self.session.put(uri,
+                                        timeout=self.timeout,
                                         data=file_data,
                                         headers={'content-type': 'application/octet-stream'},
                                         **self.request_extra_opts)
