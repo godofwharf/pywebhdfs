@@ -667,7 +667,7 @@ class WhenTestingCreateUri(unittest.TestCase):
 
     def test_create_uri_no_kwargs(self):
         op = operations.CREATE
-        uri = 'http://{{host}}:{port}/webhdfs/v1/' \
+        uri = 'http://{{host}}:{{port}}/webhdfs/v1/' \
               '{path}?op={op}&user.name={user}'\
               .format(port=self.port, path=self.path,
                       op=op, user=self.user_name)
@@ -678,7 +678,7 @@ class WhenTestingCreateUri(unittest.TestCase):
         op = operations.CREATE
         mykey = 'mykey'
         myval = 'myval'
-        uri = 'http://{{host}}:{port}/webhdfs/v1/' \
+        uri = 'http://{{host}}:{{port}}/webhdfs/v1/' \
               '{path}?op={op}&{key}={val}' \
               '&user.name={user}' \
               .format(
@@ -700,7 +700,7 @@ class WhenTestingCreateUri(unittest.TestCase):
         myval = 'myval'
         path = u'die/Stra\xdfe'
         quoted_path = 'die/Stra%C3%9Fe'
-        uri = 'http://{{host}}:{port}/webhdfs/v1/' \
+        uri = 'http://{{host}}:{{port}}/webhdfs/v1/' \
               '{path}?op={op}&{key}={val}' \
               '&user.name={user}' \
               .format(

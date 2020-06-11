@@ -56,8 +56,7 @@ class PyWebHdfsClient(object):
         if self.path_to_hosts is None:
             self.path_to_hosts = {'.*': [self.host]}
 
-        self.base_uri_pattern = base_uri_pattern.format(
-            host="{host}", port=port)
+        self.base_uri_pattern = base_uri_pattern
         self.request_extra_opts = request_extra_opts
 
     def create_file(self, path, file_data, **kwargs):
@@ -728,7 +727,7 @@ class PyWebHdfsClient(object):
             keyword_params = '{params}&{key}={value}'.format(
                 params=keyword_params, key=key, value=value)
 
-        base_uri = self.base_uri_pattern.format(host="{host}")
+        base_uri = self.base_uri_pattern.format(host="{host}", port="{port}")
 
         # build the complete uri from the base uri and all configured params
         uri = '{base_uri}{path}{operation}{keyword_args}{auth}'.format(
@@ -757,7 +756,8 @@ class PyWebHdfsClient(object):
         uri_without_host = self._create_uri(path, operation, **kwargs)
         hosts = self._resolve_federation(path)
         for host in hosts:
-            uri = uri_without_host.format(host=host)
+            hostport = host.split(':')
+            uri = uri_without_host.format(host=hostport[0], port=int(hostport[1]) if len(hostport) > 1 else self.port)
             try:
                 response = req_func(uri, allow_redirects=allow_redirect,
                                     timeout=self.timeout,
