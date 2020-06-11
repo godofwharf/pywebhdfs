@@ -32,7 +32,7 @@ class WhenTestingPyWebHdfsConstructor(unittest.TestCase):
         self.assertEqual(user_name, webhdfs.user_name)
 
     def test_init_path_to_hosts_provided(self):
-        path_to_hosts = [('.*', ['localhost'])]
+        path_to_hosts = {'.*': ['localhost']}
         webhdfs = PyWebHdfsClient(path_to_hosts=path_to_hosts)
         self.assertIsNotNone(webhdfs.path_to_hosts)
 
@@ -85,7 +85,7 @@ class WhenTestingCreateOperation(unittest.TestCase):
         result = webhdfs.create_file(self.path, self.file_data)
         self.assertTrue(result)
         mock_put.assert_called_with(
-            self.location, headers=self.expected_headers, data=self.file_data)
+            self.location, headers=self.expected_headers, data=self.file_data, timeout=120)
 
 
 class WhenTestingAppendOperation(unittest.TestCase):

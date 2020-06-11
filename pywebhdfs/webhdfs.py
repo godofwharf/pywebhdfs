@@ -54,7 +54,7 @@ class PyWebHdfsClient(object):
         self.session = requests.Session()
         self.path_to_hosts = path_to_hosts
         if self.path_to_hosts is None:
-            self.path_to_hosts = [('.*', [self.host])]
+            self.path_to_hosts = {'.*': [self.host]}
 
         self.base_uri_pattern = base_uri_pattern.format(
             host="{host}", port=port)
@@ -104,17 +104,17 @@ class PyWebHdfsClient(object):
 
         def put_wrapper(uri, **kwargs):
             if allow_redirects:
-                return requests.put(uri,
-                                    allow_redirects=allow_redirects,
-                                    timeout=self.timeout,
-                                    data=file_data,
-                                    headers={'content-type': 'application/octet-stream'},
-                                    **self.request_extra_opts)
+                return self.session.put(uri,
+                                        allow_redirects=allow_redirects,
+                                        timeout=self.timeout,
+                                        data=file_data,
+                                        headers={'content-type': 'application/octet-stream'},
+                                        **self.request_extra_opts)
             else:
-                return requests.put(uri,
-                                    allow_redirects=allow_redirects,
-                                    timeout = self.timeout,
-                                    **self.request_extra_opts)
+                return self.session.put(uri,
+                                        allow_redirects=allow_redirects,
+                                        timeout = self.timeout,
+                                        **self.request_extra_opts)
 
         response = self._resolve_host(put_wrapper,
                                       allow_redirects,
@@ -131,11 +131,11 @@ class PyWebHdfsClient(object):
             # initial response from the namenode and make the CREATE request
             # to the datanode
             uri = response.headers['location']
-            response = requests.put(uri,
-                                    timeout=self.timeout,
-                                    data=file_data,
-                                    headers={'content-type': 'application/octet-stream'},
-                                    **self.request_extra_opts)
+            response = self.session.put(uri,
+                                        timeout=self.timeout,
+                                        data=file_data,
+                                        headers={'content-type': 'application/octet-stream'},
+                                        **self.request_extra_opts)
 
         if not response.status_code == http_client.CREATED:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -742,7 +742,7 @@ class PyWebHdfsClient(object):
         """
         internal function used to resolve federation
         """
-        for path_regexp, hosts in self.path_to_hosts:
+        for path_regexp, hosts in self.path_to_hosts.items():
             if re.match(path_regexp, path):
                 return hosts
         raise errors.CorrespondHostsNotFound(
