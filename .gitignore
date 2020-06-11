@@ -3,7 +3,7 @@ build/
 *.pyc
 .idea
 *.iml
-pywebhdfs.egg-info
+**/pywebhdfs_fork.egg-info/*
 .tox
 *.DS_Store*
 coverage.xml
